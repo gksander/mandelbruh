@@ -3,34 +3,32 @@
 	import fsSource from '../fs.frag';
 	import vsSource from '../vs.frag';
 
-	const RE_INT = [-1, 1];
-	const IM_INT = [-0.6, 0.6];
-
-	const width = 500;
-	const height = 300;
+	let width = 500;
+	let height = 300;
+	let container: HTMLDivElement;
 	let canvas: HTMLCanvasElement;
+
+	// GL references
 	let gl: WebGL2RenderingContext | null;
 	let buffer: WebGLBuffer | null;
 	let currentProgram: WebGLProgram;
-
 	const locations = {
 		iterations: null as WebGLUniformLocation | null,
 		scale: null as WebGLUniformLocation | null,
 		center: null as WebGLUniformLocation | null,
 		resolution: null as WebGLUniformLocation | null
-		// time: null as WebGLUniformLocation | null,
-		// resolution: null as WebGLUniformLocation | null,
-		// insight: null as WebGLUniformLocation | null,
-		// discSize: null as WebGLUniformLocation | null,
-		// mouse: null as WebGLUniformLocation | null,
-		// zoom: null as WebGLUniformLocation | null,
-		// offset: null as WebGLUniformLocation | null,
-		// iteration: null as WebGLUniformLocation | null,
-		// juliaPos: null as WebGLUniformLocation | null
 	};
 
-	let zoomScale = 0.5;
+	// Options for rendering
+
+	let zoomScale = 1;
+	let iterations = 50;
+	let center = { x: 0.25, y: 0.1 };
+	let centerDelta = { x: 0, y: 0 };
 	const mouseCoords = { x: width / 2, y: height / 2 };
+
+	// Interactions
+	let mouseDownStartPos = null as { x: number; y: number } | null;
 
 	const init = () => {
 		canvas.width = width;
@@ -103,10 +101,10 @@
 
 		gl.useProgram(currentProgram);
 
-		gl.uniform1f(locations.resolution, 2048);
-		gl.uniform1i(locations.iterations, 50);
+		gl.uniform1f(locations.resolution, width);
+		gl.uniform1i(locations.iterations, iterations);
 		gl.uniform1f(locations.scale, zoomScale);
-		gl.uniform2f(locations.center, 0.0, 0.0);
+		gl.uniform2f(locations.center, center.x + centerDelta.x, center.y + centerDelta.y);
 
 		// Render geometry
 		let vertex_position = 0;
@@ -117,9 +115,46 @@
 		gl.disableVertexAttribArray(vertex_position);
 	};
 
+	const measure = () => {
+		if (width !== container.clientWidth || height !== container.clientHeight) {
+			width = container.clientWidth;
+			height = container.clientHeight;
+
+			canvas.width = width;
+			canvas.height = height;
+
+			gl?.viewport?.(0, 0, width, height);
+		}
+	};
+
 	const animate = () => {
+		measure();
 		render();
 		requestAnimationFrame(animate);
+	};
+
+	const onPointerDown = (e: MouseEvent) => {
+		mouseDownStartPos = { x: e.offsetX, y: e.offsetY };
+	};
+
+	const onPointerMove = (e: MouseEvent) => {
+		if (!mouseDownStartPos) return;
+
+		centerDelta.x = -(e.offsetX - mouseDownStartPos.x) / (width * zoomScale);
+		centerDelta.y = (e.offsetY - mouseDownStartPos.y) / (width * zoomScale);
+	};
+
+	const onPointerUp = () => {
+		mouseDownStartPos = null;
+
+		center.x += centerDelta.x;
+		center.y += centerDelta.y;
+		centerDelta.x = 0;
+		centerDelta.y = 0;
+	};
+
+	const onPointerLeave = () => {
+		onPointerUp();
 	};
 
 	onMount(() => {
@@ -128,19 +163,61 @@
 	});
 </script>
 
-<div style="width: {width}px; height: {height}px">
+<div
+	style="width: {width}px; height: {height}px; resize:auto; overflow:hidden;"
+	on:resize={(e) => {
+		console.log(e);
+	}}
+	bind:this={container}
+>
 	<canvas
 		bind:this={canvas}
-		on:click={(e) => {
-			zoomScale -= 0.05;
+		on:mousedown={onPointerDown}
+		on:mousemove={onPointerMove}
+		on:mouseup={onPointerUp}
+		on:pointerleave={onPointerLeave}
+		on:wheel={(e) => {
+			zoomScale += -(zoomScale * e.deltaY) / 100;
+
+			// NOTE: I feel good about these hit points!
+			const px = e.offsetX / width;
+			const x0 = center.x + px / zoomScale;
+
+			const py = (height - e.offsetY) / height;
+			const y0 = center.y + (py * (height / width)) / zoomScale;
+
+			// NOTE: I don't feel confident that this math is right.
+			center.x += (zoomScale - 1) * (x0 - center.x);
+			center.y += (zoomScale - 1) * (y0 - center.y);
 		}}
-		on:mousemove={(e) => {
-			mouseCoords.x = e.offsetX;
-			mouseCoords.y = e.offsetY;
+		on:click={(e) => {
+			// Trying to find proper hit point in GL coords
+			const px = e.offsetX / width;
+			const x0 = center.x + px / zoomScale;
+
+			const py = (height - e.offsetY) / height;
+			const y0 = center.y + (py * (height / width)) / zoomScale;
+
+			console.log(x0, y0);
+			// 🎉 This looks good.
 		}}
 	/>
+</div>
 
-	<input type="range" min="0.5" max="2" step="0.002" bind:value={zoomScale} />
+<div>
+	<label for="iterations">Iterations</label>
+	<input name="iterations" type="range" min="10" max="160" step="2" bind:value={iterations} />
+</div>
 
-	<input type="number" bind:value={zoomScale} />
+<div>{mouseDownStartPos ? 'DOWN!' : 'up'}</div>
+
+<button
+	on:click={() => {
+		zoomScale = 1;
+		center = { x: 0, y: 0 };
+	}}>Reset</button
+>
+
+<div>
+	Center: ({center.x}, {center.y})
 </div>
