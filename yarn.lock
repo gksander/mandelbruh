@@ -1109,6 +1109,13 @@ util-deprecate@^1.0.1:
   resolved "https://registry.yarnpkg.com/util-deprecate/-/util-deprecate-1.0.2.tgz#450d4dc9fa70de732762fbd2d4a28981419a0ccf"
   integrity sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==
 
+vite-plugin-glsl@^0.3.0:
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/vite-plugin-glsl/-/vite-plugin-glsl-0.3.0.tgz#118197e5aed1725a46dcc3a8f4c4906739a7644d"
+  integrity sha512-cH7ni+Y3Vz1yOumvrP/71hXVdyTxZIaYYNDeK7KMvO5nzo0uGZZrrkwEVUaESS8/5dYemb/6G0YBj3jsP2sW1A==
+  dependencies:
+    "@rollup/pluginutils" "^4.2.1"
+
 vite@^3.0.0:
   version "3.0.3"
   resolved "https://registry.yarnpkg.com/vite/-/vite-3.0.3.tgz#c7b2ed9505a36a04be1d5d23aea4ea6fc028043f"
