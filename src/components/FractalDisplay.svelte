@@ -11,6 +11,7 @@
 	} from '../stores';
 	import fsSource from '../shaders/fs.frag';
 	import vsSource from '../shaders/vs.frag';
+	import { squareDist } from '../utils/math';
 
 	let width = 500;
 	let height = 300;
@@ -155,21 +156,48 @@
 		centerDelta.y = (e.offsetY - mouseDownStartPos.y) / (width * $scale);
 	};
 
-	const onPointerUp = () => {
-		mouseDownStartPos = null;
+	const onPointerUp = (e: MouseEvent) => {
+		if (!mouseDownStartPos) return;
 
-		$center.x += centerDelta.x;
-		$center.y += centerDelta.y;
+		// On click...
+		if (
+			Date.now() - mouseDownStartPos.ts < 300 &&
+			squareDist(mouseDownStartPos.x, mouseDownStartPos.y, e.offsetX, e.offsetY) <= 10
+		) {
+			// TODO: Do clicky shit here.
+			// NOTE: I feel good about these hit points!
+			const px = e.offsetX / width;
+			const x0 = $center.x + px / $scale;
+
+			const py = (height - e.offsetY) / height;
+			const y0 = $center.y + (py * (height / width)) / $scale;
+
+			// const c = $scale;
+			// const s = 1.05;
+
+			// $scale = s * c;
+			// $center.x += c * ($center.x * s - s * x0 + x0);
+			// $center.y += (1 - s) * y0;
+			// Reset
+		}
+		// On mouseup after dragging
+		else {
+			$center.x += centerDelta.x;
+			$center.y += centerDelta.y;
+		}
+
 		centerDelta.x = 0;
 		centerDelta.y = 0;
+
+		mouseDownStartPos = null;
 	};
 
-	const onPointerLeave = () => {
-		onPointerUp();
+	const onPointerLeave = (e: MouseEvent) => {
+		onPointerUp(e);
 	};
 
 	onMount(() => {
-		hydrateStateFromURL();
+		// hydrateStateFromURL();
 		init();
 		animate();
 	});
@@ -193,11 +221,11 @@
 			const y0 = $center.y + (py * (height / width)) / $scale;
 
 			// NOTE: I don't feel confident that this math is right.
-			const s = newScale / $scale;
-			$center.x = (1 - s) * px;
-			// center.y += (1 - newScale) * y0;
+			// const s = newScale / $scale;
+			// $center.x = (1 - s) * px;
+			// // center.y += (1 - newScale) * y0;
 
-			$scale = newScale;
+			// $scale = newScale;
 		}}
 		on:click={(e) => {
 			// Trying to find proper hit point in GL coords
@@ -207,7 +235,7 @@
 			const py = (height - e.offsetY) / height;
 			const y0 = $center.y + (py * (height / width)) / $scale;
 
-			console.log(x0, y0);
+			// console.log(x0, y0);
 			// 🎉 This looks good.
 		}}
 	/>
