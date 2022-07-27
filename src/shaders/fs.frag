@@ -2,7 +2,6 @@ uniform int iterations;
 uniform vec2 center;
 uniform float scale;
 uniform float resolution;
-
 uniform vec3 boundColor;
 uniform vec3 transitionColor;
 uniform vec3 escapeColor;

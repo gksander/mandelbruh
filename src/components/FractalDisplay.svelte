@@ -31,9 +31,10 @@
 		escapeColor: null as WebGLUniformLocation | null
 	};
 
-	// Options for rendering
-
+	// Some local interaction state
 	let centerDelta = { x: 0, y: 0 };
+	let isResizing = false;
+	let resizeTimeout;
 
 	// Interactions
 	let mouseDownStartPos = null as { x: number; y: number; ts: number } | null;
@@ -139,8 +140,10 @@
 	};
 
 	const animate = () => {
-		measure();
-		render();
+		if (!isResizing) {
+			measure();
+			render();
+		}
 		requestAnimationFrame(animate);
 	};
 
@@ -210,3 +213,14 @@
 		on:wheel|preventDefault|stopPropagation={handleWheel}
 	/>
 </div>
+
+<!-- Throttle the RAF rendering when resizing window -->
+<svelte:window
+	on:resize={() => {
+		isResizing = true;
+		clearTimeout(resizeTimeout);
+		resizeTimeout = setTimeout(() => {
+			isResizing = false;
+		}, 150);
+	}}
+/>

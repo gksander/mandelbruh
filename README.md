@@ -1,38 +1,43 @@
-# create-svelte
+# Mandelbruh
 
-Everything you need to build a Svelte project, powered by [`create-svelte`](https://github.com/sveltejs/kit/tree/master/packages/create-svelte).
+This repo houses the code for [mandelbruh](https://mandelbruh.dev), a Mandelbrot set visualizer built using WebGL and Svelte.
 
-## Creating a project
+![Image of the site](./docs/sample.png)
 
-If you're seeing this, you've probably already done this step. Congrats!
+The UI allows you to adjust the number of "iterations" used to determine if a point "escapes". You can also adjust the colors for the visualization Furthermore, you can scroll to zoom, and click-and-drag to pan the view.
 
-```bash
-# create a new project in the current directory
-npm init svelte
+## How does it work?
 
-# create a new project in my-app
-npm init svelte my-app
+The visualization is powered by WebGL (mostly just shaders), and the UI is powered by Svelte. At a high-level, this is how things work:
+
+- The UI is powered by Svelte, using Svelte stores etc. to manage input values. For example, there's an `iterations` value that can be adjusted in the UI – the value for this is stored in a Svelte store, but is essentially just an integer value.
+- There is a WebGL program running inside of a canvas element. The WebGL program render cycle is running on a `requestAnimationFrame` loop, and uses various JS variables/store values that get passed along to WebGL as "uniform values".
+- As JS variables/store values are updated, the next animation frame will pick up the value and pass it along to the WebGL context to be used in the next render.
+
+The code for these WebGL shaders can be found in [`src/shaders`](./src/shaders/).In [the `fs.frag`](./src/shaders/fs.frag) file, you'll notice some declarations like:
+
+```glsl
+uniform int iterations;
+uniform vec2 center;
+uniform float scale;
+uniform float resolution;
+uniform vec3 boundColor;
+uniform vec3 transitionColor;
+uniform vec3 escapeColor;
 ```
 
-## Developing
+which are essentially the input variables to the shader process, whose values are provided from the JS side of things.
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+In [the `FractalDisplay.svelte` file](./src/components/FractalDisplay.svelte) you'll see something like this:
 
-```bash
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
+```ts
+gl.uniform1f(locations.resolution, width);
+gl.uniform1i(locations.iterations, Math.round($iterations));
+gl.uniform1f(locations.scale, $scale);
+gl.uniform2f(locations.center, $center.x + centerDelta.x, $center.y + centerDelta.y);
+gl.uniform3f(locations.boundColor, ...$boundColor);
+gl.uniform3f(locations.transitionColor, ...$transitionColor);
+gl.uniform3f(locations.escapeColor, ...$escapeColor);
 ```
 
-## Building
-
-To create a production version of your app:
-
-```bash
-npm run build
-```
-
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://kit.svelte.dev/docs/adapters) for your target environment.
+These `gl.uniform1f` etc calls are what send our JS values into the WebGL context for our shader to use.
