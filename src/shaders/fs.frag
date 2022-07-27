@@ -30,21 +30,5 @@ void main() {
     }
   }
 
-  // A debug grid
-  for (int i = 0; i < 5; i++) {
-    for (int j = 0; j < 5; j++) {
-      if (length(c - vec2(i, j)) < 0.01) {
-        gl_FragColor = vec4(vec3(1., 0., 0.), 1.);
-        return;
-      }
-    }
-  }
-
-  // // Testing points
-  // if (length(c - vec2(0.256, -0.00133)) < 0.01) {
-  //   gl_FragColor = vec4(vec3(1., 0., 1.), 1.);
-  //   return;
-  // }
-
   gl_FragColor = hasEscaped ? vec4(mix(escapeColor, transitionColor, float(escapeIteration)/float(iterations)), 1.0) : vec4(boundColor, 1.);
 }

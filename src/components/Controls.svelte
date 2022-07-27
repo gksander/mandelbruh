@@ -22,7 +22,7 @@
 					id="iterations"
 					type="range"
 					min="10"
-					max="300"
+					max="600"
 					step="2"
 					bind:value={$iterations}
 					class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
@@ -45,9 +45,9 @@
 
 	<div class="border-t flex text-xs font-medium">
 		<a
-      href="https://github.com/gksander"
-      target="_blank"
-      rel="noreferrer"
+			href="https://github.com/gksander"
+			target="_blank"
+			rel="noreferrer"
 			class="flex-1 text-center border-r p-3 cursor-pointer bg:white hover:bg-gray-100 transition-colors duration-150"
 			>@gksander</a
 		>

@@ -14,7 +14,7 @@ const setQp = (key: string, value: string) => {
 // Defaults
 const DEFAULTS = {
 	ITERATIONS: 50,
-	CENTER: { x: 0, y: 0 },
+	CENTER: { x: -0.30092880409492784, y: -0.1911651931130758 },
 	SCALE: 1,
 	BOUND_COLOR: '#4D80CC',
 	TRANS_COLOR: '#BE00CC',
