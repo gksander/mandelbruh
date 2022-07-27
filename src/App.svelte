@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import fsSource from './fs.frag';
-	import vsSource from './vs.frag';
+	import fsSource from './shaders/fs.frag';
+	import vsSource from './shaders/vs.frag';
 
 	let width = 500;
 	let height = 300;
@@ -208,11 +208,9 @@
 </div>
 
 <div>
-	<label for="iterations">Iterations</label>
+	<label for="iterations" class="text-gray-800">Iterations</label>
 	<input name="iterations" type="range" min="10" max="160" step="2" bind:value={iterations} />
 </div>
-
-<div>{mouseDownStartPos ? 'DOWN!' : 'up'}</div>
 
 <button
 	on:click={() => {
