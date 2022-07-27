@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import fsSource from '../fs.frag';
-	import vsSource from '../vs.frag';
+	import fsSource from './fs.frag';
+	import vsSource from './vs.frag';
 
 	let width = 500;
 	let height = 300;
