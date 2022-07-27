@@ -177,7 +177,7 @@
 		on:mouseup={onPointerUp}
 		on:pointerleave={onPointerLeave}
 		on:wheel={(e) => {
-			zoomScale += -(zoomScale * e.deltaY) / 100;
+			const newScale = zoomScale + -(zoomScale * e.deltaY) / 100;
 
 			// NOTE: I feel good about these hit points!
 			const px = e.offsetX / width;
@@ -187,8 +187,11 @@
 			const y0 = center.y + (py * (height / width)) / zoomScale;
 
 			// NOTE: I don't feel confident that this math is right.
-			center.x += (zoomScale - 1) * (x0 - center.x);
-			center.y += (zoomScale - 1) * (y0 - center.y);
+			const s = newScale / zoomScale;
+			center.x = (1 - s) * px;
+			// center.y += (1 - newScale) * y0;
+
+			zoomScale = newScale;
 		}}
 		on:click={(e) => {
 			// Trying to find proper hit point in GL coords

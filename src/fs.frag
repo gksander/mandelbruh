@@ -42,6 +42,7 @@ void main() {
   vec3 color4 = vec3(0.0, 0.5, 0.8);
   vec3 defaultColor = vec3(0.3, 0.5, 0.8);
 
+  // A debug grid
   for (int i = 0; i < 5; i++) {
     for (int j = 0; j < 5; j++) {
       if (length(c - vec2(i, j)) < 0.01) {
@@ -51,6 +52,7 @@ void main() {
     }
   }
 
+  // Testing points
   if (length(c - vec2(0.256, -0.00133)) < 0.01) {
     gl_FragColor = vec4(vec3(1., 0., 1.), 1.);
     return;
