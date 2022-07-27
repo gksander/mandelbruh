@@ -1,6 +1,14 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { iterations, zoomScale, center, defaultColor, color1, color2 } from '../stores';
+	import {
+		iterations,
+		scale,
+		center,
+		boundColor,
+		transitionColor,
+		escapeColor,
+		hydrateStateFromURL
+	} from '../stores';
 	import fsSource from '../shaders/fs.frag';
 	import vsSource from '../shaders/vs.frag';
 
@@ -18,9 +26,9 @@
 		scale: null as WebGLUniformLocation | null,
 		center: null as WebGLUniformLocation | null,
 		resolution: null as WebGLUniformLocation | null,
-		defaultColor: null as WebGLUniformLocation | null,
-		color1: null as WebGLUniformLocation | null,
-		color2: null as WebGLUniformLocation | null
+		boundColor: null as WebGLUniformLocation | null,
+		transitionColor: null as WebGLUniformLocation | null,
+		escapeColor: null as WebGLUniformLocation | null
 	};
 
 	// Options for rendering
@@ -28,7 +36,7 @@
 	let centerDelta = { x: 0, y: 0 };
 
 	// Interactions
-	let mouseDownStartPos = null as { x: number; y: number } | null;
+	let mouseDownStartPos = null as { x: number; y: number; ts: number } | null;
 
 	const init = () => {
 		gl ||= canvas?.getContext('webgl2');
@@ -47,9 +55,9 @@
 		locations.center = gl.getUniformLocation(currentProgram, 'center');
 		locations.scale = gl.getUniformLocation(currentProgram, 'scale');
 		locations.resolution = gl.getUniformLocation(currentProgram, 'resolution');
-		locations.defaultColor = gl.getUniformLocation(currentProgram, 'defaultColor');
-		locations.color1 = gl.getUniformLocation(currentProgram, 'color1');
-		locations.color2 = gl.getUniformLocation(currentProgram, 'color2');
+		locations.boundColor = gl.getUniformLocation(currentProgram, 'boundColor');
+		locations.transitionColor = gl.getUniformLocation(currentProgram, 'transitionColor');
+		locations.escapeColor = gl.getUniformLocation(currentProgram, 'escapeColor');
 
 		gl.viewport(0, 0, width, height);
 	};
@@ -103,11 +111,11 @@
 
 		gl.uniform1f(locations.resolution, width);
 		gl.uniform1i(locations.iterations, Math.round($iterations));
-		gl.uniform1f(locations.scale, $zoomScale);
+		gl.uniform1f(locations.scale, $scale);
 		gl.uniform2f(locations.center, $center.x + centerDelta.x, $center.y + centerDelta.y);
-		gl.uniform3f(locations.defaultColor, ...$defaultColor);
-		gl.uniform3f(locations.color1, ...$color1);
-		gl.uniform3f(locations.color2, ...$color2);
+		gl.uniform3f(locations.boundColor, ...$boundColor);
+		gl.uniform3f(locations.transitionColor, ...$transitionColor);
+		gl.uniform3f(locations.escapeColor, ...$escapeColor);
 
 		// Render geometry
 		let vertex_position = 0;
@@ -137,14 +145,14 @@
 	};
 
 	const onPointerDown = (e: MouseEvent) => {
-		mouseDownStartPos = { x: e.offsetX, y: e.offsetY };
+		mouseDownStartPos = { x: e.offsetX, y: e.offsetY, ts: Date.now() };
 	};
 
 	const onPointerMove = (e: MouseEvent) => {
 		if (!mouseDownStartPos) return;
 
-		centerDelta.x = -(e.offsetX - mouseDownStartPos.x) / (width * $zoomScale);
-		centerDelta.y = (e.offsetY - mouseDownStartPos.y) / (width * $zoomScale);
+		centerDelta.x = -(e.offsetX - mouseDownStartPos.x) / (width * $scale);
+		centerDelta.y = (e.offsetY - mouseDownStartPos.y) / (width * $scale);
 	};
 
 	const onPointerUp = () => {
@@ -161,6 +169,7 @@
 	};
 
 	onMount(() => {
+		hydrateStateFromURL();
 		init();
 		animate();
 	});
@@ -174,29 +183,29 @@
 		on:mouseup={onPointerUp}
 		on:pointerleave={onPointerLeave}
 		on:wheel={(e) => {
-			const newScale = $zoomScale + -($zoomScale * e.deltaY) / 100;
+			const newScale = $scale + -($scale * e.deltaY) / 100;
 
 			// NOTE: I feel good about these hit points!
 			const px = e.offsetX / width;
-			const x0 = $center.x + px / $zoomScale;
+			const x0 = $center.x + px / $scale;
 
 			const py = (height - e.offsetY) / height;
-			const y0 = $center.y + (py * (height / width)) / $zoomScale;
+			const y0 = $center.y + (py * (height / width)) / $scale;
 
 			// NOTE: I don't feel confident that this math is right.
-			const s = newScale / $zoomScale;
+			const s = newScale / $scale;
 			$center.x = (1 - s) * px;
 			// center.y += (1 - newScale) * y0;
 
-			$zoomScale = newScale;
+			$scale = newScale;
 		}}
 		on:click={(e) => {
 			// Trying to find proper hit point in GL coords
 			const px = e.offsetX / width;
-			const x0 = $center.x + px / $zoomScale;
+			const x0 = $center.x + px / $scale;
 
 			const py = (height - e.offsetY) / height;
-			const y0 = $center.y + (py * (height / width)) / $zoomScale;
+			const y0 = $center.y + (py * (height / width)) / $scale;
 
 			console.log(x0, y0);
 			// 🎉 This looks good.

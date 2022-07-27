@@ -3,9 +3,9 @@ uniform vec2 center;
 uniform float scale;
 uniform float resolution;
 
-uniform vec3 color1;
-uniform vec3 color2;
-uniform vec3 defaultColor;
+uniform vec3 boundColor;
+uniform vec3 transitionColor;
+uniform vec3 escapeColor;
 
 vec2 cmul(vec2 a, vec2 b) {
   return vec2(a.x * b.x - a.y * b.y, a.x * b.y + a.y * b.x);
@@ -22,7 +22,6 @@ vec3 palette(float t, vec3 c1, vec3 c2, vec3 c3, vec3 c4) {
 
 void main() {
   vec2 uv = gl_FragCoord.xy / resolution;
-  // vec2 c = center + (uv * 4. - vec2(2.)) * (scale / 4.);
   vec2 c = center + uv * (1. / scale);
 
   vec2 z = vec2(0., 0.);
@@ -40,8 +39,8 @@ void main() {
     }
   }
 
-  // vec3 color1 = vec3(0.02, 0.02, 0.03);
-  // vec3 color2 = vec3(0.1, 0.2, 0.3);
+  // vec3 transitionColor = vec3(0.02, 0.02, 0.03);
+  // vec3 escapeColor = vec3(0.1, 0.2, 0.3);
   // vec3 color3 = vec3(0.0, 0.3, 0.2);
   // vec3 color4 = vec3(0.0, 0.5, 0.8);
 
@@ -63,5 +62,5 @@ void main() {
   //   return;
   // }
 
-  gl_FragColor = hasEscaped ? vec4(mix(color1, color2, float(escapeIteration)/float(iterations)), 1.0) : vec4(defaultColor, 1.);
+  gl_FragColor = hasEscaped ? vec4(mix(escapeColor, transitionColor, float(escapeIteration)/float(iterations)), 1.0) : vec4(boundColor, 1.);
 }

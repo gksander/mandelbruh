@@ -24,5 +24,8 @@
 		"vite": "^3.0.0",
 		"vite-plugin-glsl": "^0.3.0"
 	},
-	"type": "module"
+	"type": "module",
+	"dependencies": {
+		"zod": "^3.17.10"
+	}
 }
