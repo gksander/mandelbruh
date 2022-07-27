@@ -3,6 +3,10 @@ uniform vec2 center;
 uniform float scale;
 uniform float resolution;
 
+uniform vec3 color1;
+uniform vec3 color2;
+uniform vec3 defaultColor;
+
 vec2 cmul(vec2 a, vec2 b) {
   return vec2(a.x * b.x - a.y * b.y, a.x * b.y + a.y * b.x);
 }
@@ -36,27 +40,28 @@ void main() {
     }
   }
 
-  vec3 color1 = vec3(0.02, 0.02, 0.03);
-  vec3 color2 = vec3(0.1, 0.2, 0.3);
-  vec3 color3 = vec3(0.0, 0.3, 0.2);
-  vec3 color4 = vec3(0.0, 0.5, 0.8);
-  vec3 defaultColor = vec3(0.3, 0.5, 0.8);
+  // vec3 color1 = vec3(0.02, 0.02, 0.03);
+  // vec3 color2 = vec3(0.1, 0.2, 0.3);
+  // vec3 color3 = vec3(0.0, 0.3, 0.2);
+  // vec3 color4 = vec3(0.0, 0.5, 0.8);
+
+  // #4D80CC
 
   // A debug grid
-  for (int i = 0; i < 5; i++) {
-    for (int j = 0; j < 5; j++) {
-      if (length(c - vec2(i, j)) < 0.01) {
-        gl_FragColor = vec4(vec3(1., 0., 0.), 1.);
-        return;
-      }
-    }
-  }
+  // for (int i = 0; i < 5; i++) {
+  //   for (int j = 0; j < 5; j++) {
+  //     if (length(c - vec2(i, j)) < 0.01) {
+  //       gl_FragColor = vec4(vec3(1., 0., 0.), 1.);
+  //       return;
+  //     }
+  //   }
+  // }
 
-  // Testing points
-  if (length(c - vec2(0.256, -0.00133)) < 0.01) {
-    gl_FragColor = vec4(vec3(1., 0., 1.), 1.);
-    return;
-  }
+  // // Testing points
+  // if (length(c - vec2(0.256, -0.00133)) < 0.01) {
+  //   gl_FragColor = vec4(vec3(1., 0., 1.), 1.);
+  //   return;
+  // }
 
-  gl_FragColor = hasEscaped ? vec4(palette(float(escapeIteration)/float(iterations), color1, color2, color3, color4), 1.0) : vec4(defaultColor, 1.);
+  gl_FragColor = hasEscaped ? vec4(mix(color1, color2, float(escapeIteration)/float(iterations)), 1.0) : vec4(defaultColor, 1.);
 }
