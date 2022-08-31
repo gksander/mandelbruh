@@ -103,13 +103,8 @@
 		return shader;
 	};
 
-	const render = () => {
-		if (!gl) return;
-
-		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
-		gl.useProgram(currentProgram);
-
+	// Dynamically set uniform locations when values change.
+	$: if (gl) {
 		gl.uniform1f(locations.resolution, width);
 		gl.uniform1i(locations.iterations, Math.round($iterations));
 		gl.uniform1f(locations.scale, $scale);
@@ -117,6 +112,13 @@
 		gl.uniform3f(locations.boundColor, ...$boundColor);
 		gl.uniform3f(locations.transitionColor, ...$transitionColor);
 		gl.uniform3f(locations.escapeColor, ...$escapeColor);
+	}
+
+	const render = () => {
+		if (!gl) return;
+
+		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+		gl.useProgram(currentProgram);
 
 		// Render geometry
 		let vertex_position = 0;
